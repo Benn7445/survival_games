@@ -1,0 +1,4 @@
+name: hungergames
+version: '${project.version}'
+main: me.quartz.hungergames.Hungergames
+api-version: '1.20'
