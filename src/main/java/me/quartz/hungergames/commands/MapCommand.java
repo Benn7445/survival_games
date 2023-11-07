@@ -13,7 +13,7 @@ public class MapCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if(commandSender.hasPermission("hungergames.map")) {
-            if(strings.length > 0) {
+            if(strings.length > 1) {
                 if(strings[0].equalsIgnoreCase("create")) {
                     if(Hungergames.getInstance().getMapManager().createMap(strings[1]))
                         commandSender.sendMessage(ChatColor.GREEN + "The map " + strings[1] + " has been created.");

@@ -1,9 +1,14 @@
 package me.quartz.hungergames.map;
 
+import me.quartz.hungergames.Hungergames;
+import me.quartz.hungergames.files.CustomFile;
+import me.quartz.hungergames.utils.FileUtils;
 import org.bukkit.Location;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Map {
 
@@ -16,6 +21,7 @@ public class Map {
         this.name = name;
         this.center = null;
         this.spawnLocations = new ArrayList<>();
+        Hungergames.getInstance().getMapManager().serialize(this);
     }
 
     public Map(String name, Location center, List<Location> spawnLocations) {
@@ -34,6 +40,7 @@ public class Map {
 
     public void setCenter(Location center) {
         this.center = center;
+        Hungergames.getInstance().getMapManager().serialize(this);
     }
 
     public List<Location> getSpawnLocations() {
@@ -42,5 +49,6 @@ public class Map {
 
     public void addSpawnLocation(Location location) {
         spawnLocations.add(location);
+        Hungergames.getInstance().getMapManager().serialize(this);
     }
 }

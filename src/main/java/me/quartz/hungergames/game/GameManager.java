@@ -1,5 +1,8 @@
 package me.quartz.hungergames.game;
 
+import me.quartz.hungergames.Hungergames;
+import me.quartz.hungergames.scoreHelper.ScoreHelper;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -13,15 +16,18 @@ public class GameManager {
     }
 
     public void createGame(List<Player> players) {
-        Game game = new Game(players.subList(0, 5), players.subList(5, 10));
+        Game game = new Game(new ArrayList<>(players));
         games.add(game);
         game.start();
+        for(Player player : players) {
+            if(ScoreHelper.hasScore(player)) ScoreHelper.removeScore(player);
+            Hungergames.getInstance().getScoreManager().createScoreboard(player);
+        }
     }
 
     public Game getGame(Player player) {
-        for(Game game : games) {
-            if(game.getPlayers().contains(player)) return game;
-        }
-        return null;
+        return games.stream().filter(game ->
+                game.getPlayers().stream().anyMatch(player1 -> player1.getUniqueId().toString().equals(player.getUniqueId().toString())))
+                .findAny().orElse(null);
     }
 }

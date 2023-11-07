@@ -16,7 +16,7 @@ public class EntityDamageListener implements Listener {
             Player player = (Player) event.getEntity();
             Game game = Hungergames.getInstance().getGameManager().getGame(player);
             if(game != null) {
-                if (game.getGameStatus() == GameStatus.PRE_GAME)
+                if (game.getGameStatus() == GameStatus.PRE_GAME || game.isGrace())
                     event.setCancelled(true);
             } else event.setCancelled(true);
         }

@@ -1,0 +1,6 @@
+name: hungergames
+version: '1.0-SNAPSHOT'
+main: me.quartz.hungergames.Hungergames
+commands:
+  map:
+  join:

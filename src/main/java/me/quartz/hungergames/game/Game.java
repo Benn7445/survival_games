@@ -2,6 +2,7 @@ package me.quartz.hungergames.game;
 
 import me.quartz.hungergames.Hungergames;
 import me.quartz.hungergames.map.Map;
+import me.quartz.hungergames.scoreHelper.ScoreHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -17,18 +18,24 @@ public class Game {
 
     private GameStatus gameStatus;
     private int timer;
+    private boolean grace;
 
     private final List<Player> teamA;
     private final List<Player> teamB;
     private final List<Player> spectators;
 
-    public Game(List<Player> teamA, List<Player> teamB) {
+    public Game(List<Player> players) {
         this.id = UUID.randomUUID();
         this.map = Hungergames.getInstance().getMapManager().getRandomMap();
         this.gameStatus = GameStatus.PRE_GAME;
-        this.timer = 11;
-        this.teamA = teamA;
-        this.teamB = teamB;
+        this.timer = 30;
+        this.grace = true;
+        this.teamA = new ArrayList<>();
+        this.teamB = new ArrayList<>();
+        for (int i = 0; i < players.size(); i++) {
+            if ((players.size() / 2) > i) teamA.add(players.get(i));
+            else teamB.add(players.get(i));
+        }
         this.spectators = new ArrayList<>();
     }
 
@@ -45,9 +52,13 @@ public class Game {
     }
 
     public void nextGameStatus() {
-        if(gameStatus == GameStatus.PRE_GAME) gameStatus = GameStatus.LIVE_GAME;
-        else if(gameStatus == GameStatus.LIVE_GAME) gameStatus = GameStatus.DEATHMATCH;
-        else if(gameStatus == GameStatus.DEATHMATCH) gameStatus = GameStatus.FINISHED;
+        if (gameStatus == GameStatus.PRE_GAME) gameStatus = GameStatus.LIVE_GAME;
+        else if (gameStatus == GameStatus.LIVE_GAME) gameStatus = GameStatus.DEATHMATCH;
+        else if (gameStatus == GameStatus.DEATHMATCH) gameStatus = GameStatus.FINISHED;
+        for(Player player : getPlayers()) {
+            if(ScoreHelper.hasScore(player)) ScoreHelper.removeScore(player);
+            Hungergames.getInstance().getScoreManager().createScoreboard(player);
+        }
     }
 
     public int getTimer() {
@@ -60,6 +71,18 @@ public class Game {
 
     public void reduceTimer() {
         this.timer--;
+    }
+
+    public boolean isGrace() {
+        return grace;
+    }
+
+    public void setGrace(boolean grace) {
+        this.grace = grace;
+        for(Player player : getPlayers()) {
+            if(ScoreHelper.hasScore(player)) ScoreHelper.removeScore(player);
+            Hungergames.getInstance().getScoreManager().createScoreboard(player);
+        }
     }
 
     public List<Player> getPlayers() {
@@ -95,23 +118,52 @@ public class Game {
 
     public void start() {
         int index = 0;
-        for(Player player : getPlayers()){
+        for (Player player : getPlayers()) {
             player.teleport(map.getSpawnLocations().get(index));
             player.setAllowFlight(true);
-            final int finalIndex = index;
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Hungergames.getInstance(), () -> {
-                player.teleport(map.getSpawnLocations().get(finalIndex));
-                player.setAllowFlight(false);
-            }, 400L);
             index++;
         }
         new BukkitRunnable() {
             @Override
             public void run() {
-                reduceTimer();
-                if(timer == 10 || timer <= 5)
+                if(timer == 10) {
+                    int index = 0;
+                    for (Player player : getPlayers()) {
+                        player.teleport(map.getSpawnLocations().get(index));
+                        player.setAllowFlight(false);
+                        index++;
+                    }
+                }
+                if (timer == 10 || (timer <= 5 && timer > 0))
                     getPlayers().forEach(player -> player.sendMessage(timer + "s..."));
-                if(timer == 0) cancel();
+                if (timer == 0) {
+                    getPlayers().forEach(player -> player.sendMessage("Starting..."));
+                    nextGameStatus();
+                    setTimer(60);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if(timer > 0) reduceTimer();
+                            else {
+                                setGrace(false);
+                                setTimer(600);
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        if(timer > 0) reduceTimer();
+                                        else {
+                                            nextGameStatus();
+                                            cancel();
+                                        }
+                                    }
+                                }.runTaskTimer(Hungergames.getInstance(), 0, 20);
+                                cancel();
+                            }
+                        }
+                    }.runTaskTimer(Hungergames.getInstance(), 0, 20);
+                    cancel();
+                }
+                if(timer > 0) reduceTimer();
             }
         }.runTaskTimer(Hungergames.getInstance(), 0, 20);
     }

@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class QueueManager {
 
@@ -16,14 +18,14 @@ public class QueueManager {
 
     public void queuePlayer(Player player) {
         players.add(player);
-        if(players.size() == 10) {
+        if(players.size() == Hungergames.getInstance().getMapManager().getMinimum() && Hungergames.getInstance().getMapManager().isMinimum()) {
             Hungergames.getInstance().getGameManager().createGame(players);
             players.clear();
         }
     }
 
-    public boolean isQueued(Player player) {
-        return players.contains(player);
+    public boolean isQueued(UUID uuid) {
+        return players.stream().anyMatch(player -> player.getUniqueId().toString().equals(uuid.toString()));
     }
 
     public List<Player> getPlayers() {

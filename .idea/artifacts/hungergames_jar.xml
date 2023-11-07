@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="hungergames:jar">
+    <output-path>$USER_HOME$/Desktop/minecraft/plugins</output-path>
+    <root id="archive" name="hungergames.jar">
+      <element id="module-output" name="hungergames" />
+    </root>
+  </artifact>
+</component>
