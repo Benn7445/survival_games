@@ -17,4 +17,11 @@ public class GameManager {
         games.add(game);
         game.start();
     }
+
+    public Game getGame(Player player) {
+        for(Game game : games) {
+            if(game.getPlayers().contains(player)) return game;
+        }
+        return null;
+    }
 }

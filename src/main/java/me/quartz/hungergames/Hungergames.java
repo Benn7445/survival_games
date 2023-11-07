@@ -3,9 +3,11 @@ package me.quartz.hungergames;
 import me.quartz.hungergames.commands.JoinCommand;
 import me.quartz.hungergames.commands.MapCommand;
 import me.quartz.hungergames.game.GameManager;
+import me.quartz.hungergames.listeners.EntityDamageListener;
 import me.quartz.hungergames.map.MapManager;
 import me.quartz.hungergames.profile.ProfileManager;
 import me.quartz.hungergames.queue.QueueManager;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Hungergames extends JavaPlugin {
@@ -40,6 +42,7 @@ public final class Hungergames extends JavaPlugin {
     public void onEnable() {
         registerManagers();
         registerCommands();
+        registerListeners();
     }
 
     @Override
@@ -57,5 +60,9 @@ public final class Hungergames extends JavaPlugin {
     private void registerCommands() {
         getCommand("map").setExecutor(new MapCommand());
         getCommand("join").setExecutor(new JoinCommand());
+    }
+
+    private void registerListeners() {
+        Bukkit.getPluginManager().registerEvents(new EntityDamageListener(), this);
     }
 }
