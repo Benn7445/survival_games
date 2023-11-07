@@ -2,7 +2,9 @@ package me.quartz.hungergames.game;
 
 import me.quartz.hungergames.Hungergames;
 import me.quartz.hungergames.map.Map;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +22,13 @@ public class Game {
     private final List<Player> teamB;
     private final List<Player> spectators;
 
-    public Game() {
+    public Game(List<Player> teamA, List<Player> teamB) {
         this.id = UUID.randomUUID();
         this.map = Hungergames.getInstance().getMapManager().getRandomMap();
         this.gameStatus = GameStatus.PRE_GAME;
-        this.timer = 20;
-        this.teamA = new ArrayList<>();
-        this.teamB = new ArrayList<>();
+        this.timer = 11;
+        this.teamA = teamA;
+        this.teamB = teamB;
         this.spectators = new ArrayList<>();
     }
 
@@ -60,6 +62,13 @@ public class Game {
         this.timer--;
     }
 
+    public List<Player> getPlayers() {
+        List<Player> players = new ArrayList<>();
+        players.addAll(teamA);
+        players.addAll(teamB);
+        return players;
+    }
+
     public List<Player> getTeamA() {
         return teamA;
     }
@@ -82,5 +91,28 @@ public class Game {
 
     public void killPlayer(Player player) {
         spectators.add(player);
+    }
+
+    public void start() {
+        int index = 0;
+        for(Player player : getPlayers()){
+            player.teleport(map.getSpawnLocations().get(index));
+            player.setAllowFlight(true);
+            final int finalIndex = index;
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Hungergames.getInstance(), () -> {
+                player.teleport(map.getSpawnLocations().get(finalIndex));
+                player.setAllowFlight(false);
+            }, 400L);
+            index++;
+        }
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                reduceTimer();
+                if(timer == 10 || timer <= 5)
+                    getPlayers().forEach(player -> player.sendMessage(timer + "s..."));
+                if(timer == 0) cancel();
+            }
+        }.runTaskTimer(Hungergames.getInstance(), 0, 20);
     }
 }

@@ -9,8 +9,5 @@
         <module name="hungergames" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="hungergames" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

@@ -3,3 +3,4 @@ version: '${project.version}'
 main: me.quartz.hungergames.Hungergames
 commands:
   map:
+  join:
