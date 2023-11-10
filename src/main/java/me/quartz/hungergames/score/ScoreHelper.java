@@ -1,7 +1,13 @@
-package me.quartz.hungergames.scoreHelper;
+package me.quartz.hungergames.score;
 
+import me.quartz.hungergames.Hungergames;
+import me.quartz.hungergames.game.Game;
+import net.minecraft.server.v1_7_R4.PacketPlayOutScoreboardTeam;
+import net.minecraft.server.v1_7_R4.ScoreboardTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -11,6 +17,7 @@ import org.bukkit.scoreboard.Team;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class ScoreHelper {
 
@@ -35,8 +42,21 @@ public class ScoreHelper {
     private final Scoreboard scoreboard;
     private final Objective sidebar;
 
+    private final Team friendlyTeam;
+    private final Team enemyTeam;
+    private final Team normalTeam;
+
     private ScoreHelper(Player player) {
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+
+        friendlyTeam = scoreboard.registerNewTeam("friendlies");
+        enemyTeam = scoreboard.registerNewTeam("enemies");
+        normalTeam = scoreboard.registerNewTeam("normal");
+
+        friendlyTeam.setPrefix(ChatColor.GREEN + "");
+        enemyTeam.setPrefix(ChatColor.RED + "");
+        normalTeam.setPrefix(ChatColor.GRAY + "");
+
         sidebar = scoreboard.registerNewObjective("sidebar", "dummy");
         sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
         // Create Teams
@@ -91,4 +111,26 @@ public class ScoreHelper {
         return s.length()>16 ? s.substring(16) : "";
     }
 
+    public void setPlayersTag(Player player) {
+        Game game = Hungergames.getInstance().getGameManager().getGame(player);
+
+        if(game != null) {
+            setTag(player, game.isTeamA(player) ?
+                    game.getTeamA().stream().map(HumanEntity::getName).collect(Collectors.toList()) :
+                    game.getTeamB().stream().map(HumanEntity::getName).collect(Collectors.toList()), false, true);
+            setTag(player, !game.isTeamA(player) ?
+                    game.getTeamA().stream().map(HumanEntity::getName).collect(Collectors.toList()) :
+                    game.getTeamB().stream().map(HumanEntity::getName).collect(Collectors.toList()), false, false);
+        } else {
+            setTag(player, Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).collect(Collectors.toList()), true, false);
+        }
+    }
+
+    private void setTag(Player player, List<String> players, boolean normal, boolean team) {
+        net.minecraft.server.v1_7_R4.Scoreboard nmsScoreboard = new net.minecraft.server.v1_7_R4.Scoreboard();
+        ScoreboardTeam nmsTeam = new ScoreboardTeam(nmsScoreboard, normal ? normalTeam.getName() : (team ? friendlyTeam.getName() : enemyTeam.getName()));
+        PacketPlayOutScoreboardTeam packet = new PacketPlayOutScoreboardTeam(nmsTeam, players, 3);
+        CraftPlayer craftPlayer = (CraftPlayer) player;
+        craftPlayer.getHandle().playerConnection.sendPacket(packet);
+    }
 }

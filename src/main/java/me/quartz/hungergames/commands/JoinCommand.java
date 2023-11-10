@@ -18,8 +18,8 @@ public class JoinCommand implements CommandExecutor {
             Game game = Hungergames.getInstance().getGameManager().getGame(player);
             if(game == null) {
                 if (!Hungergames.getInstance().getQueueManager().isQueued(player.getUniqueId())) {
-                    Hungergames.getInstance().getQueueManager().queuePlayer(player);
                     player.sendMessage(ChatColor.GREEN + "Added to the queue.");
+                    Hungergames.getInstance().getQueueManager().queuePlayer(player);
                 } else player.sendMessage(ChatColor.RED + "You are already queued.");
             } else player.sendMessage(ChatColor.RED + "You are already in game.");
         } else commandSender.sendMessage(ChatColor.RED + "You do not have permissions.");

@@ -3,11 +3,16 @@ package me.quartz.hungergames.listeners;
 import me.quartz.hungergames.Hungergames;
 import me.quartz.hungergames.game.Game;
 import me.quartz.hungergames.game.GameStatus;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerMoveListener implements Listener {
 
@@ -16,7 +21,7 @@ public class PlayerMoveListener implements Listener {
         Player player = event.getPlayer();
         Game game = Hungergames.getInstance().getGameManager().getGame(player);
         if(game != null) {
-            if(game.getGameStatus() == GameStatus.PRE_GAME && game.getTimer() != 0 && game.getTimer() < 10) {
+            if((game.getGameStatus() == GameStatus.PRE_GAME && game.getTimer() != 0 && game.getTimer() <= 10) || (game.getGameStatus() == GameStatus.DEATHMATCH && game.getTimer() >= 180)) {
                 if(event.getTo().getX() != event.getFrom().getX()) player.teleport(event.getFrom());
                 if(event.getTo().getZ() != event.getFrom().getZ()) player.teleport(event.getFrom());
             }

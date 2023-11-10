@@ -2,7 +2,7 @@ package me.quartz.hungergames.commands;
 
 import me.quartz.hungergames.Hungergames;
 import me.quartz.hungergames.map.Map;
-import org.bukkit.ChatColor;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,6 +36,17 @@ public class MapCommand implements CommandExecutor {
                             commandSender.sendMessage(ChatColor.GREEN + "Center location for " + map.getName() + " has been set.");
                         } else commandSender.sendMessage(ChatColor.RED + "This map wasn't found.");
                     } else commandSender.sendMessage(ChatColor.RED + "Only players can execute this command.");
+                } else if(strings[0].equalsIgnoreCase("load")) {
+                    World world = Bukkit.getWorld(strings[1]);
+                    if(world == null) {
+                        world = new WorldCreator(strings[1]).createWorld();
+                    }
+                    if(commandSender instanceof Player) {
+                        Player player = (Player) commandSender;
+                        Location location = player.getLocation();
+                        location.setWorld(world);
+                        player.teleport(location);
+                    }
                 } else if(strings[0].equalsIgnoreCase("remove")) {
                     if(Hungergames.getInstance().getMapManager().removeMap(strings[1]))
                         commandSender.sendMessage(ChatColor.GREEN + "The map " + strings[1] + " has been removed.");

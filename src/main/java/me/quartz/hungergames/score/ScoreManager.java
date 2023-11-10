@@ -1,4 +1,4 @@
-package me.quartz.hungergames.scoreHelper;
+package me.quartz.hungergames.score;
 
 import me.quartz.hungergames.Hungergames;
 import me.quartz.hungergames.game.Game;
@@ -24,8 +24,9 @@ public class ScoreManager {
         Profile profile = Hungergames.getInstance().getProfileManager().getProfile(player.getUniqueId());
         Game game = Hungergames.getInstance().getGameManager().getGame(player);
         ScoreHelper helper = ScoreHelper.createScore(player);
-        helper.setTitle(Hungergames.getInstance().getConfig().getString(game != null ? (game.getGameStatus() == GameStatus.PRE_GAME ? "scoreboard-pre-title" : "scoreboard-live-title") : "scoreboard-title"));
+        helper.setTitle(Hungergames.getInstance().getConfig().getString(game != null ? (game.getGameStatus() == GameStatus.PRE_GAME ? "scoreboard-pre-title" : (game.isFinished() ? "scoreboard-finished-title" : "scoreboard-live-title")) : "scoreboard-title"));
         updateConfigScore(profile, game, helper);
+        ScoreHelper.getByPlayer(player).setPlayersTag(player);
     }
 
     public void updateScoreboard(Player player) {
@@ -38,8 +39,8 @@ public class ScoreManager {
     }
 
     private void updateConfigScore(Profile profile, Game game, ScoreHelper helper) {
-        int i = Hungergames.getInstance().getConfig().getStringList(game != null ? (game.getGameStatus() == GameStatus.PRE_GAME ? "scoreboard-pre" : "scoreboard-live") : "scoreboard").size();
-        for(String s : Hungergames.getInstance().getConfig().getStringList(game != null ? (game.getGameStatus() == GameStatus.PRE_GAME ? "scoreboard-pre" : "scoreboard-live") : "scoreboard")) {
+        int i = Hungergames.getInstance().getConfig().getStringList(game != null ? (game.getGameStatus() == GameStatus.PRE_GAME ? "scoreboard-pre" : (game.isFinished() ? "scoreboard-finished" : "scoreboard-live")) : "scoreboard").size();
+        for(String s : Hungergames.getInstance().getConfig().getStringList(game != null ? (game.getGameStatus() == GameStatus.PRE_GAME ? "scoreboard-pre" : (game.isFinished() ? "scoreboard-finished" : "scoreboard-live")) : "scoreboard")) {
             if((!s.startsWith("%ifq%:") || Hungergames.getInstance().getQueueManager().isQueued(profile.getUuid())) &&
                     (!s.startsWith("%ifg%:") || (game != null && game.isGrace())) &&
                     (!s.startsWith("%ifng%:") || (game != null && !game.isGrace()))) {
@@ -49,10 +50,11 @@ public class ScoreManager {
                         replace("%ifng%:", "").
                         replace("%status%", game != null ? game.getGameStatus().toString() : "").
                         replace("%map%", game != null ? game.getMap().getName() + "" : "").
-                        replace("%timer%", game != null ? game.getTimer() + "s" : "").
+                        replace("%timer%", game != null ? game.getStringTimer() + "" : "").
                         replace("%online%", Bukkit.getOnlinePlayers().size() + "").
                         replace("%max%", Bukkit.getMaxPlayers() + "").
-                        replace("%spectators%", game != null ? game.getSpectators().size() + "" : "")
+                        replace("%spectators%", game != null ? game.getSpectators().size() + "" : "").
+                        replace("%winner%", game != null ? (game.getTeamA().stream().allMatch(game::isDead) ? "Team A": "Team B") : "")
                 );
             }
             i = i-1;

@@ -4,3 +4,5 @@ main: me.quartz.hungergames.Hungergames
 commands:
   map:
   join:
+  setspawn:
+  getworld:

@@ -58,7 +58,7 @@ public class MapManager {
     }
 
     public int getMinimum() {
-        return 2;
+        return Hungergames.getInstance().getConfig().getInt("players");
     }
 
     public void serialize(Map map) {
